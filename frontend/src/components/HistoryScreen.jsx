@@ -1,27 +1,69 @@
 import { useEffect, useState } from 'react';
 import { getHistory } from '../api/inspectAPI';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 function HistoryScreen({ onBack }) {
   const [inspections, setInspections] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getHistory()
-      .then(setInspections)
-      .finally(() => setLoading(false));
+    getHistory().then(setInspections).finally(() => setLoading(false));
   }, []);
+
+  const compliantCount = inspections.filter((i) => i.status === 'compliant').length;
+  const nonCompliantCount = inspections.filter((i) => i.status === 'non-compliant').length;
+  const statusData = [
+    { name: 'Compliant', count: compliantCount, fill: '#4ade80' },
+    { name: 'Non-Compliant', count: nonCompliantCount, fill: '#f87171' },
+  ];
+
+  const missingCounts = {};
+  inspections.forEach((item) => {
+    (item.missingFields || []).forEach((field) => {
+      missingCounts[field] = (missingCounts[field] || 0) + 1;
+    });
+  });
+  const missingData = Object.entries(missingCounts).map(([name, count]) => ({ name, count }));
 
   return (
     <div className="min-h-screen bg-slate-900 p-6">
       <div className="max-w-3xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold text-white">Inspection History</h1>
-          <button onClick={onBack} className="text-slate-400 hover:text-white underline">
-            New Inspection
-          </button>
-        </div>
+        <h1 className="text-3xl font-bold text-white mb-6">Inspection History</h1>
 
         {loading && <p className="text-slate-400">Loading...</p>}
+
+        {!loading && inspections.length > 0 && (
+          <div className="grid md:grid-cols-2 gap-4 mb-8">
+            <div className="bg-slate-800 rounded-lg p-4">
+              <p className="text-slate-300 font-semibold mb-2">Compliance Overview</p>
+              <ResponsiveContainer width="100%" height={180}>
+                <BarChart data={statusData}>
+                  <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} />
+                  <YAxis stroke="#94a3b8" fontSize={12} allowDecimals={false} />
+                  <Tooltip contentStyle={{ background: '#1e293b', border: 'none' }} />
+                  <Bar dataKey="count">
+                    {statusData.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {missingData.length > 0 && (
+              <div className="bg-slate-800 rounded-lg p-4">
+                <p className="text-slate-300 font-semibold mb-2">Most Common Missing Fields</p>
+                <ResponsiveContainer width="100%" height={180}>
+                  <BarChart data={missingData}>
+                    <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} />
+                    <YAxis stroke="#94a3b8" fontSize={12} allowDecimals={false} />
+                    <Tooltip contentStyle={{ background: '#1e293b', border: 'none' }} />
+                    <Bar dataKey="count" fill="#60a5fa" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </div>
+        )}
+
         {!loading && inspections.length === 0 && (
           <p className="text-slate-400">No inspections yet — go check a product.</p>
         )}
@@ -49,5 +91,4 @@ function HistoryScreen({ onBack }) {
     </div>
   );
 }
-
 export default HistoryScreen;

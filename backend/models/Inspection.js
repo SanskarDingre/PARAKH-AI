@@ -1,32 +1,32 @@
 const mongoose = require('mongoose');
 
 const inspectionSchema = new mongoose.Schema({
-  extractedFields: {
-    productName: String,
-    manufacturer: String,
-    mrp: String,
-    netQuantity: String,
-  },
+  ruleResults: [
+    {
+      ruleId: String,
+      key: String,
+      title: String,
+      category: String,
+      legalReference: String,
+      severity: String,
+      result: { type: String, enum: ['PASS', 'FAIL', 'UNABLE_TO_VERIFY'] },
+    },
+  ],
   rawText: String,
   missingFields: [String],
   status: {
     type: String,
-    enum: ['compliant', 'non-compliant'],
+    enum: ['compliant', 'non-compliant', 'needs-review'],
     default: 'non-compliant',
   },
-    officerDecision: {
+  ruleSetVersion: String,
+  officerDecision: {
     type: String,
     enum: ['confirmed', 'overridden', null],
     default: null,
   },
-  officerNote: {
-    type: String,
-    default: '',
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
+  officerNote: { type: String, default: '' },
+  createdAt: { type: Date, default: Date.now },
 });
 
 module.exports = mongoose.model('Inspection', inspectionSchema);

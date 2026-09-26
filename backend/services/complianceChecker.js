@@ -1,10 +1,11 @@
-const rules = require('../config/rules.json');
+const ruleSet = require('../config/rules.json');
+
+const CONFIDENCE_THRESHOLD = 0.5;
 
 function textMatches(text, patterns) {
   const lower = text.toLowerCase();
   return patterns.some((pattern) => new RegExp(pattern, 'i').test(lower));
 }
-
 function getYCenter(box) {
   const ys = box.map((p) => p[1]);
   return (Math.min(...ys) + Math.max(...ys)) / 2;
@@ -20,7 +21,6 @@ function getXLeft(box) {
 function groupIntoRows(ocrLines) {
   const sorted = [...ocrLines].sort((a, b) => getYCenter(a.box) - getYCenter(b.box));
   const rows = [];
-
   sorted.forEach((line) => {
     const yCenter = getYCenter(line.box);
     const threshold = Math.max(getHeight(line.box) * 0.7, 10);
@@ -32,13 +32,12 @@ function groupIntoRows(ocrLines) {
       rows.push({ yCenter, lines: [line] });
     }
   });
-
   return rows.map((row) => {
-    const orderedLeftToRight = [...row.lines].sort((a, b) => getXLeft(a.box) - getXLeft(b.box));
+    const ordered = [...row.lines].sort((a, b) => getXLeft(a.box) - getXLeft(b.box));
     return {
-      text: orderedLeftToRight.map((l) => l.text).join(' '),
+      text: ordered.map((l) => l.text).join(' '),
       confidence: row.lines.reduce((sum, l) => sum + l.confidence, 0) / row.lines.length,
-      box: orderedLeftToRight[0].box,
+      box: ordered[0].box,
     };
   });
 }
@@ -47,26 +46,43 @@ function checkCompliance(ocrLines) {
   const rows = groupIntoRows(ocrLines);
   const candidates = [...rows, ...ocrLines];
 
-  const extractedFields = {};
-  const missingFields = [];
+  const ruleResults = [];
   const evidence = {};
 
-  rules.requiredFields.forEach((field) => {
-    const match = candidates.find((c) => textMatches(c.text, field.patterns));
-    if (match) {
-      extractedFields[field.key] = 'Present';
-      evidence[field.key] = { text: match.text, confidence: match.confidence, box: match.box };
+  ruleSet.rules.forEach((rule) => {
+    const match = candidates.find((c) => textMatches(c.text, rule.patterns));
+    let result;
+
+    if (!match) {
+      result = 'FAIL';
+      evidence[rule.key] = null;
+    } else if (match.confidence < CONFIDENCE_THRESHOLD) {
+      result = 'UNABLE_TO_VERIFY';
+      evidence[rule.key] = { text: match.text, confidence: match.confidence, box: match.box };
     } else {
-      extractedFields[field.key] = 'Missing';
-      missingFields.push(field.label);
-      evidence[field.key] = null;
+      result = 'PASS';
+      evidence[rule.key] = { text: match.text, confidence: match.confidence, box: match.box };
     }
+
+    ruleResults.push({
+      ruleId: rule.id,
+      key: rule.key,
+      title: rule.title,
+      category: rule.category,
+      legalReference: rule.legalReference,
+      severity: rule.severity,
+      result,
+    });
   });
 
-  const status = missingFields.length === 0 ? 'compliant' : 'non-compliant';
-  const rawText = ocrLines.map((line) => line.text).join(' ');
+  const hasFail = ruleResults.some((r) => r.result === 'FAIL');
+  const hasReview = ruleResults.some((r) => r.result === 'UNABLE_TO_VERIFY');
+  const status = hasFail ? 'non-compliant' : hasReview ? 'needs-review' : 'compliant';
 
-  return { extractedFields, missingFields, status, rawText, evidence };
+  const missingFields = ruleResults.filter((r) => r.result === 'FAIL').map((r) => r.title);
+  const rawText = ocrLines.map((l) => l.text).join(' ');
+
+  return { status, ruleResults, missingFields, evidence, rawText, ruleSetVersion: ruleSet.ruleSetVersion };
 }
 
 module.exports = { checkCompliance };

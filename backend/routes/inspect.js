@@ -21,22 +21,24 @@ router.post('/inspect', upload.single('image'), async (req, res) => {
       headers: formData.getHeaders(),
     });
 
-        // Run the extracted text through the compliance rule engine
+    // Run the extracted text through the compliance rule engine
     const result = checkCompliance(ocrResponse.data.lines);
 
     // Save this inspection permanently to MongoDB
     const savedInspection = await Inspection.create({
-      extractedFields: result.extractedFields,
+      ruleResults: result.ruleResults,
       rawText: result.rawText,
       missingFields: result.missingFields,
       status: result.status,
+      ruleSetVersion: result.ruleSetVersion,
     });
 
-        res.json({
+    res.json({
       status: result.status,
-      extractedFields: result.extractedFields,
+      ruleResults: result.ruleResults,
       missingFields: result.missingFields,
       evidence: result.evidence,
+      ruleSetVersion: result.ruleSetVersion,
       inspectionId: savedInspection._id,
       rawText: result.rawText,
     });
@@ -46,6 +48,7 @@ router.post('/inspect', upload.single('image'), async (req, res) => {
     res.status(500).json({ error: 'Something went wrong during inspection' });
   }
 });
+
 router.get('/history', async (req, res) => {
   try {
     const inspections = await Inspection.find().sort({ createdAt: -1 }).limit(20);
@@ -54,6 +57,7 @@ router.get('/history', async (req, res) => {
     res.status(500).json({ error: 'Could not fetch inspection history' });
   }
 });
+
 router.patch('/inspect/:id/verify', async (req, res) => {
   try {
     const { decision, note } = req.body;
@@ -65,6 +69,25 @@ router.patch('/inspect/:id/verify', async (req, res) => {
     res.json(updated);
   } catch (error) {
     res.status(500).json({ error: 'Could not save verification' });
+  }
+});
+
+router.get('/dashboard', async (req, res) => {
+  try {
+    const total = await Inspection.countDocuments();
+    const compliant = await Inspection.countDocuments({ status: 'compliant' });
+    const nonCompliant = await Inspection.countDocuments({ status: 'non-compliant' });
+    const needsReview = await Inspection.countDocuments({ status: 'needs-review' });
+
+    const severityBreakdown = await Inspection.aggregate([
+      { $unwind: '$ruleResults' },
+      { $match: { 'ruleResults.result': 'FAIL' } },
+      { $group: { _id: '$ruleResults.severity', count: { $sum: 1 } } },
+    ]);
+
+    res.json({ total, compliant, nonCompliant, needsReview, severityBreakdown });
+  } catch (error) {
+    res.status(500).json({ error: 'Could not load dashboard data' });
   }
 });
 module.exports = router;

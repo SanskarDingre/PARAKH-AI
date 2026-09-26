@@ -1,19 +1,55 @@
 {
-  "requiredFields": [
+  "ruleSetVersion": "LMPC-2011-v1",
+  "rules": [
     {
-      "key": "mrp",
-      "label": "Maximum Retail Price (MRP)",
-      "patterns": ["mrp", "m\\.r\\.p", "maximum retail price", "sales price", "rs\\.?\\s?\\d+", "\\u20b9\\s?\\d+"]
+      "key": "manufacturer",
+      "id": "LM-PC-6-1-A",
+      "title": "Manufacturer / Packer / Importer Details",
+      "category": "Identity Declaration",
+      "requirement": "Name and address of the manufacturer, or the manufacturer and packer if different, or the importer for imported packages.",
+      "legalReference": "Legal Metrology (Packaged Commodities) Rules, 2011 — Rule 6(1)(a)",
+      "severity": "high",
+      "patterns": ["manufactured by", "marketed by", "packed by", "mfg\\.?\\s?by", "importer"]
     },
     {
       "key": "netQuantity",
-      "label": "Net Quantity",
+      "id": "LM-PC-6-1-C",
+      "title": "Net Quantity",
+      "category": "Quantity Declaration",
+      "requirement": "Net quantity of the commodity, in terms of standard unit of weight, measure, or number.",
+      "legalReference": "Legal Metrology (Packaged Commodities) Rules, 2011 — Rule 6(1)(c)",
+      "severity": "high",
       "patterns": ["net qty", "net quantity", "net wt", "net weight", "\\d+\\s?(g|kg|ml|l|gm|gms)\\b"]
     },
     {
-      "key": "manufacturer",
-      "label": "Manufacturer / Packer Name",
-      "patterns": ["manufactured by", "marketed by", "packed by", "mfg\\.?\\s?by"]
+      "key": "mfgDate",
+      "id": "LM-PC-6-1-D",
+      "title": "Month and Year of Manufacture",
+      "category": "Date Declaration",
+      "requirement": "The month and year in which the commodity was manufactured, pre-packed, or imported.",
+      "legalReference": "Legal Metrology (Packaged Commodities) Rules, 2011 — Rule 6(1)(d)",
+      "severity": "medium",
+      "patterns": ["mfg date", "mfd", "manufactured on", "packed on", "packaging date", "\\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*[\\s./-]\\d{2,4}\\b"]
+    },
+    {
+      "key": "mrp",
+      "id": "LM-PC-6-1-E",
+      "title": "Maximum Retail Price (MRP)",
+      "category": "Price Declaration",
+      "requirement": "Retail sale price of the package, inclusive of all taxes.",
+      "legalReference": "Legal Metrology (Packaged Commodities) Rules, 2011 — Rule 6(1)(e)",
+      "severity": "high",
+      "patterns": ["mrp", "m\\.r\\.p", "maximum retail price", "sales price", "rs\\.?\\s?\\d+", "\\u20b9\\s?\\d+"]
+    },
+    {
+      "key": "consumerCare",
+      "id": "LM-PC-6-2",
+      "title": "Consumer Care Details",
+      "category": "Contact Declaration",
+      "requirement": "Name, address, telephone number, and e-mail address (if available) of the person or office to contact for consumer complaints.",
+      "legalReference": "Legal Metrology (Packaged Commodities) Rules, 2011 — Rule 6(2)",
+      "severity": "medium",
+      "patterns": ["consumer care", "customer care", "for complaints", "helpline", "@\\w+\\.\\w+"]
     }
   ]
 }
