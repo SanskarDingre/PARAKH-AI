@@ -5,7 +5,9 @@ function DashboardPage() {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/dashboard').then((res) => setData(res.data));
+    axios.get('http://localhost:5000/api/dashboard', {
+  headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+}).then((res) => setData(res.data));
   }, []);
 
   if (!data) return <div className="text-slate-400 p-6">Loading...</div>;
