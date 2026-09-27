@@ -62,7 +62,7 @@ function ResultsScreen({ result, imageUrl, onReset }) {
 
       <div className="no-print flex gap-4 mt-6">
         <button onClick={onReset} className="text-slate-400 hover:text-white underline">Check another product</button>
-        <button onClick={() => window.print()} className="text-blue-400 hover:text-blue-300 underline">Download Report (PDF)</button>
+        <a href={`http://localhost:5000/api/inspect/${result.inspectionId}/report`} target="_blank" rel="noreferrer" className="text-blue-400 hover:text-blue-300 underline">Download Report (PDF)</a>
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ const multer = require('multer');
 const axios = require('axios');
 const FormData = require('form-data');
 const { checkCompliance } = require('../services/complianceChecker');
+const { generateReport } = require('../services/reportGenerator');
 const Inspection = require('../models/Inspection');
 
 const router = express.Router();
@@ -20,6 +21,7 @@ router.post('/inspect', upload.single('image'), async (req, res) => {
     const result = checkCompliance(ocrResponse.data.lines);
 
     const savedInspection = await Inspection.create({
+      imageBase64: `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`,
       ruleResults: result.ruleResults,
       rawText: result.rawText,
       missingFields: result.missingFields,
@@ -71,6 +73,16 @@ router.patch('/inspect/:id/verify', async (req, res) => {
     res.json(updated);
   } catch (error) {
     res.status(500).json({ error: 'Could not save verification' });
+  }
+});
+
+router.get('/inspect/:id/report', async (req, res) => {
+  try {
+    const inspection = await Inspection.findById(req.params.id);
+    if (!inspection) return res.status(404).json({ error: 'Inspection not found' });
+    generateReport(inspection, res);
+  } catch (error) {
+    res.status(500).json({ error: 'Could not generate report' });
   }
 });
 

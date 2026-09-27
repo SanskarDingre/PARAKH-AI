@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const inspectionSchema = new mongoose.Schema({
+  imageBase64: String,
   ruleResults: [
     {
       ruleId: String,
@@ -20,11 +21,7 @@ const inspectionSchema = new mongoose.Schema({
     default: 'non-compliant',
   },
   ruleSetVersion: String,
-  officerDecision: {
-    type: String,
-    enum: ['confirmed', 'overridden', null],
-    default: null,
-  },
+  officerDecision: { type: String, enum: ['confirmed', 'overridden', null], default: null },
   officerNote: { type: String, default: '' },
   createdAt: { type: Date, default: Date.now },
 });
