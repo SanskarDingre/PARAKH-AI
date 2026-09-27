@@ -5,12 +5,20 @@ const FormData = require('form-data');
 const { checkCompliance } = require('../services/complianceChecker');
 const { generateReport } = require('../services/reportGenerator');
 const Inspection = require('../models/Inspection');
+const RuleSet = require('../models/RuleSet');
+const Violation = require('../models/Violation');
+const AuditLog = require('../models/AuditLog');
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
 router.post('/inspect', upload.single('image'), async (req, res) => {
   try {
+    const activeRuleSet = await RuleSet.findOne({ isActive: true });
+    if (!activeRuleSet) {
+      return res.status(500).json({ error: 'No active rule set configured. Run the seed script first.' });
+    }
+
     const formData = new FormData();
     formData.append('file', req.file.buffer, req.file.originalname);
 
@@ -18,7 +26,7 @@ router.post('/inspect', upload.single('image'), async (req, res) => {
       headers: formData.getHeaders(),
     });
 
-    const result = checkCompliance(ocrResponse.data.lines);
+    const result = checkCompliance(ocrResponse.data.lines, activeRuleSet);
 
     const savedInspection = await Inspection.create({
       imageBase64: `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`,
@@ -27,6 +35,26 @@ router.post('/inspect', upload.single('image'), async (req, res) => {
       missingFields: result.missingFields,
       status: result.status,
       ruleSetVersion: result.ruleSetVersion,
+    });
+
+    const failedRules = result.ruleResults.filter((r) => r.result === 'FAIL');
+    if (failedRules.length > 0) {
+      await Violation.insertMany(
+        failedRules.map((r) => ({
+          inspectionId: savedInspection._id,
+          ruleId: r.ruleId,
+          title: r.title,
+          category: r.category,
+          legalReference: r.legalReference,
+          severity: r.severity,
+        }))
+      );
+    }
+
+    await AuditLog.create({
+      action: 'INSPECTION_CREATED',
+      inspectionId: savedInspection._id,
+      details: { status: result.status, ruleSetVersion: result.ruleSetVersion },
     });
 
     res.json({
@@ -56,6 +84,7 @@ router.get('/history', async (req, res) => {
 router.delete('/history', async (req, res) => {
   try {
     await Inspection.deleteMany({});
+    await Violation.deleteMany({});
     res.json({ message: 'History cleared' });
   } catch (error) {
     res.status(500).json({ error: 'Could not clear history' });
@@ -70,6 +99,11 @@ router.patch('/inspect/:id/verify', async (req, res) => {
       { officerDecision: decision, officerNote: note || '' },
       { new: true }
     );
+    await AuditLog.create({
+      action: decision === 'confirmed' ? 'INSPECTION_CONFIRMED' : 'INSPECTION_OVERRIDDEN',
+      inspectionId: req.params.id,
+      details: { note: note || '' },
+    });
     res.json(updated);
   } catch (error) {
     res.status(500).json({ error: 'Could not save verification' });
@@ -92,10 +126,8 @@ router.get('/dashboard', async (req, res) => {
     const compliant = await Inspection.countDocuments({ status: 'compliant' });
     const nonCompliant = await Inspection.countDocuments({ status: 'non-compliant' });
     const needsReview = await Inspection.countDocuments({ status: 'needs-review' });
-    const severityBreakdown = await Inspection.aggregate([
-      { $unwind: '$ruleResults' },
-      { $match: { 'ruleResults.result': 'FAIL' } },
-      { $group: { _id: '$ruleResults.severity', count: { $sum: 1 } } },
+    const severityBreakdown = await Violation.aggregate([
+      { $group: { _id: '$severity', count: { $sum: 1 } } },
     ]);
     res.json({ total, compliant, nonCompliant, needsReview, severityBreakdown });
   } catch (error) {
@@ -105,16 +137,14 @@ router.get('/dashboard', async (req, res) => {
 
 router.get('/violations', async (req, res) => {
   try {
-    const inspections = await Inspection.find({ status: { $ne: 'compliant' } }).sort({ createdAt: -1 }).limit(50);
-    const violations = [];
-    inspections.forEach((insp) => {
-      insp.ruleResults.forEach((r) => {
-        if (r.result === 'FAIL') {
-          violations.push({ inspectionId: insp._id, date: insp.createdAt, title: r.title, severity: r.severity, legalReference: r.legalReference });
-        }
-      });
-    });
-    res.json(violations);
+    const violations = await Violation.find().sort({ createdAt: -1 }).limit(50);
+    res.json(violations.map((v) => ({
+      inspectionId: v.inspectionId,
+      date: v.createdAt,
+      title: v.title,
+      severity: v.severity,
+      legalReference: v.legalReference,
+    })));
   } catch (error) {
     res.status(500).json({ error: 'Could not fetch violations' });
   }

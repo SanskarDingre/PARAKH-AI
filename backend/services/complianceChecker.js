@@ -1,7 +1,3 @@
-const ruleSet = require('../config/rules.json');
-
-const CONFIDENCE_THRESHOLD = 0.5;
-
 function textMatches(text, patterns) {
   const lower = text.toLowerCase();
   return patterns.some((pattern) => new RegExp(pattern, 'i').test(lower));
@@ -42,7 +38,9 @@ function groupIntoRows(ocrLines) {
   });
 }
 
-function checkCompliance(ocrLines) {
+const CONFIDENCE_THRESHOLD = 0.5;
+
+function checkCompliance(ocrLines, ruleSet) {
   const rows = groupIntoRows(ocrLines);
   const candidates = [...rows, ...ocrLines];
 
@@ -82,7 +80,7 @@ function checkCompliance(ocrLines) {
   const missingFields = ruleResults.filter((r) => r.result === 'FAIL').map((r) => r.title);
   const rawText = ocrLines.map((l) => l.text).join(' ');
 
-  return { status, ruleResults, missingFields, evidence, rawText, ruleSetVersion: ruleSet.ruleSetVersion };
+  return { status, ruleResults, missingFields, evidence, rawText, ruleSetVersion: ruleSet.version };
 }
 
 module.exports = { checkCompliance };
