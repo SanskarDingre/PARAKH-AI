@@ -21,6 +21,7 @@ const inspectionSchema = new mongoose.Schema({
     default: 'non-compliant',
   },
   ruleSetVersion: String,
+  complianceScore: { type: Number, default: 0 },
   officerDecision: { type: String, enum: ['confirmed', 'overridden', null], default: null },
   officerNote: { type: String, default: '' },
   createdAt: { type: Date, default: Date.now },

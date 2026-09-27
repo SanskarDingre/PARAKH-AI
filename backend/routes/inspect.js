@@ -35,6 +35,7 @@ router.post('/inspect', upload.single('image'), async (req, res) => {
       missingFields: result.missingFields,
       status: result.status,
       ruleSetVersion: result.ruleSetVersion,
+      complianceScore: result.complianceScore,
     });
 
     const failedRules = result.ruleResults.filter((r) => r.result === 'FAIL');
@@ -65,6 +66,7 @@ router.post('/inspect', upload.single('image'), async (req, res) => {
       ruleSetVersion: result.ruleSetVersion,
       inspectionId: savedInspection._id,
       rawText: result.rawText,
+      complianceScore: result.complianceScore,
     });
   } catch (error) {
     console.error('Error during inspection:', error.message);
@@ -151,3 +153,4 @@ router.get('/violations', async (req, res) => {
 });
 
 module.exports = router;
+

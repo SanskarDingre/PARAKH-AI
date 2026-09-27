@@ -22,6 +22,8 @@ function generateReport(inspection, res) {
   doc.fillColor(inspection.status === 'compliant' ? RESULT_COLORS.PASS : inspection.status === 'needs-review' ? RESULT_COLORS.UNABLE_TO_VERIFY : RESULT_COLORS.FAIL);
   doc.text(STATUS_LABELS[inspection.status] || inspection.status);
   doc.moveDown();
+  doc.fontSize(12).fillColor('#0f172a').text(`Compliance Score: ${inspection.complianceScore}%`);
+  doc.moveDown();
 
   if (inspection.imageBase64) {
     try {

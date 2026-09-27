@@ -75,12 +75,22 @@ function checkCompliance(ocrLines, ruleSet) {
 
   const hasFail = ruleResults.some((r) => r.result === 'FAIL');
   const hasReview = ruleResults.some((r) => r.result === 'UNABLE_TO_VERIFY');
-  const status = hasFail ? 'non-compliant' : hasReview ? 'needs-review' : 'compliant';
 
+  const severityWeight = { high: 3, medium: 2, low: 1 };
+  const totalWeight = ruleResults.reduce((sum, r) => sum + (severityWeight[r.severity] || 1), 0);
+  const earnedWeight = ruleResults.reduce((sum, r) => {
+    const weight = severityWeight[r.severity] || 1;
+    if (r.result === 'PASS') return sum + weight;
+    if (r.result === 'UNABLE_TO_VERIFY') return sum + weight * 0.5;
+    return sum;
+  }, 0);
+  const complianceScore = totalWeight > 0 ? Math.round((earnedWeight / totalWeight) * 100) : 0;
+
+  const status = hasFail ? 'non-compliant' : hasReview ? 'needs-review' : 'compliant';
   const missingFields = ruleResults.filter((r) => r.result === 'FAIL').map((r) => r.title);
   const rawText = ocrLines.map((l) => l.text).join(' ');
 
-  return { status, ruleResults, missingFields, evidence, rawText, ruleSetVersion: ruleSet.version };
+  return { status, ruleResults, missingFields, evidence, rawText, ruleSetVersion: ruleSet.version, complianceScore };
 }
 
 module.exports = { checkCompliance };

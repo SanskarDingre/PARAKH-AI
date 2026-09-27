@@ -19,3 +19,9 @@ const ruleSetSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('RuleSet', ruleSetSchema);
+
+
+
+
+
+

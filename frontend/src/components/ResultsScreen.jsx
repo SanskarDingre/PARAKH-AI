@@ -29,6 +29,9 @@ function ResultsScreen({ result, imageUrl, onReset }) {
           <div className={`inline-block px-4 py-1.5 rounded-full font-semibold mb-4 ${overall.className}`}>
             {overall.label}
           </div>
+                    <p className="text-slate-400 text-sm mb-4">
+            Compliance Score: <span className="text-white font-semibold">{result.complianceScore}%</span>
+          </p>
 
           <ul className="space-y-2">
             {result.ruleResults.map((r) => {
