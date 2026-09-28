@@ -1,6 +1,12 @@
 const PDFDocument = require('pdfkit');
 
-const RESULT_COLORS = { PASS: '#22c55e', FAIL: '#ef4444', UNABLE_TO_VERIFY: '#f59e0b' };
+const RESULT_COLORS = {
+  PASS: '#22c55e',
+  FAIL: '#ef4444',
+  WARNING: '#eab308',
+  NOT_APPLICABLE: '#94a3b8',
+  UNABLE_TO_VERIFY: '#f59e0b',
+};
 const STATUS_LABELS = { compliant: 'COMPLIANT', 'non-compliant': 'NON-COMPLIANT', 'needs-review': 'NEEDS REVIEW' };
 
 function generateReport(inspection, res) {

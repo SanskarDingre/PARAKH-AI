@@ -1,8 +1,20 @@
 import { useState } from 'react';
 import { verifyInspection } from '../api/inspectAPI';
 
-const statusStyles = { PASS: 'text-green-400', FAIL: 'text-red-400', UNABLE_TO_VERIFY: 'text-amber-400' };
-const statusLabels = { PASS: 'Pass', FAIL: 'Fail', UNABLE_TO_VERIFY: 'Needs Review' };
+const statusStyles = {
+  PASS: 'text-green-400',
+  FAIL: 'text-red-400',
+  WARNING: 'text-yellow-400',
+  NOT_APPLICABLE: 'text-slate-500',
+  UNABLE_TO_VERIFY: 'text-amber-400',
+};
+const statusLabels = {
+  PASS: 'Pass',
+  FAIL: 'Fail',
+  WARNING: 'Warning',
+  NOT_APPLICABLE: 'Not Applicable',
+  UNABLE_TO_VERIFY: 'Needs Review',
+};
 const overallStyles = {
   compliant: { label: 'Compliant', className: 'bg-green-500/20 text-green-400' },
   'non-compliant': { label: 'Non-Compliant', className: 'bg-red-500/20 text-red-400' },

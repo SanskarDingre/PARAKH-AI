@@ -76,12 +76,13 @@ function checkCompliance(ocrLines, ruleSet) {
   const hasFail = ruleResults.some((r) => r.result === 'FAIL');
   const hasReview = ruleResults.some((r) => r.result === 'UNABLE_TO_VERIFY');
 
-  const severityWeight = { high: 3, medium: 2, low: 1 };
-  const totalWeight = ruleResults.reduce((sum, r) => sum + (severityWeight[r.severity] || 1), 0);
-  const earnedWeight = ruleResults.reduce((sum, r) => {
+    const severityWeight = { high: 3, medium: 2, low: 1 };
+  const scoredRules = ruleResults.filter((r) => r.result !== 'NOT_APPLICABLE');
+  const totalWeight = scoredRules.reduce((sum, r) => sum + (severityWeight[r.severity] || 1), 0);
+  const earnedWeight = scoredRules.reduce((sum, r) => {
     const weight = severityWeight[r.severity] || 1;
     if (r.result === 'PASS') return sum + weight;
-    if (r.result === 'UNABLE_TO_VERIFY') return sum + weight * 0.5;
+    if (r.result === 'UNABLE_TO_VERIFY' || r.result === 'WARNING') return sum + weight * 0.5;
     return sum;
   }, 0);
   const complianceScore = totalWeight > 0 ? Math.round((earnedWeight / totalWeight) * 100) : 0;

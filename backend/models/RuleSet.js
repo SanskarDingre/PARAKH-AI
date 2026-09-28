@@ -9,6 +9,7 @@ const ruleSchema = new mongoose.Schema({
   legalReference: String,
   severity: String,
   patterns: [String],
+  applicabilityPatterns: [String],
 }, { _id: false });
 
 const ruleSetSchema = new mongoose.Schema({

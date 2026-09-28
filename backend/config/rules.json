@@ -1,15 +1,27 @@
 {
-  "ruleSetVersion": "LMPC-2011-v1",
+  "ruleSetVersion": "LMPC-2011-v2",
   "rules": [
     {
       "key": "manufacturer",
       "id": "LM-PC-6-1-A",
-      "title": "Manufacturer / Packer / Importer Details",
+      "title": "Manufacturer / Packer Details",
       "category": "Identity Declaration",
-      "requirement": "Name and address of the manufacturer, or the manufacturer and packer if different, or the importer for imported packages.",
+      "requirement": "Name and address of the manufacturer, or the manufacturer and packer if different.",
       "legalReference": "Legal Metrology (Packaged Commodities) Rules, 2011 — Rule 6(1)(a)",
       "severity": "high",
-      "patterns": ["manufactured by", "marketed by", "packed by", "mfg\\.?\\s?by", "importer"]
+      "applicabilityPatterns": [],
+      "patterns": ["manufactured by", "marketed by", "packed by", "mfg\\.?\\s?by"]
+    },
+    {
+      "key": "importerDetails",
+      "id": "LM-PC-6-1-A2",
+      "title": "Importer Details (Imported Packages)",
+      "category": "Identity Declaration",
+      "requirement": "Name and address of the importer — required only when the package is imported.",
+      "legalReference": "Legal Metrology (Packaged Commodities) Rules, 2011 — Rule 6(1)(a)",
+      "severity": "high",
+      "applicabilityPatterns": ["imported", "import", "country of origin"],
+      "patterns": ["imported by", "importer"]
     },
     {
       "key": "netQuantity",
@@ -19,6 +31,7 @@
       "requirement": "Net quantity of the commodity, in terms of standard unit of weight, measure, or number.",
       "legalReference": "Legal Metrology (Packaged Commodities) Rules, 2011 — Rule 6(1)(c)",
       "severity": "high",
+      "applicabilityPatterns": [],
       "patterns": ["net qty", "net quantity", "net wt", "net weight", "\\d+\\s?(g|kg|ml|l|gm|gms)\\b"]
     },
     {
@@ -29,6 +42,7 @@
       "requirement": "The month and year in which the commodity was manufactured, pre-packed, or imported.",
       "legalReference": "Legal Metrology (Packaged Commodities) Rules, 2011 — Rule 6(1)(d)",
       "severity": "medium",
+      "applicabilityPatterns": [],
       "patterns": ["mfg date", "mfd", "manufactured on", "packed on", "packaging date", "\\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*[\\s./-]\\d{2,4}\\b"]
     },
     {
@@ -39,6 +53,7 @@
       "requirement": "Retail sale price of the package, inclusive of all taxes.",
       "legalReference": "Legal Metrology (Packaged Commodities) Rules, 2011 — Rule 6(1)(e)",
       "severity": "high",
+      "applicabilityPatterns": [],
       "patterns": ["mrp", "m\\.r\\.p", "maximum retail price", "sales price", "rs\\.?\\s?\\d+", "\\u20b9\\s?\\d+"]
     },
     {
@@ -49,6 +64,7 @@
       "requirement": "Name, address, telephone number, and e-mail address (if available) of the person or office to contact for consumer complaints.",
       "legalReference": "Legal Metrology (Packaged Commodities) Rules, 2011 — Rule 6(2)",
       "severity": "medium",
+      "applicabilityPatterns": [],
       "patterns": ["consumer care", "customer care", "for complaints", "helpline", "@\\w+\\.\\w+"]
     }
   ]
