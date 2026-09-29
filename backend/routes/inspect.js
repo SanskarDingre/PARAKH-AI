@@ -170,5 +170,80 @@ router.get('/violations', async (req, res) => {
   }
 });
 
+// ── GET /api/dashboard/trends — daily inspection counts for the last N days ──
+router.get('/dashboard/trends', async (req, res) => {
+  try {
+    const days = Math.min(parseInt(req.query.days) || 30, 90);
+    const since = new Date();
+    since.setDate(since.getDate() - days + 1);
+    since.setHours(0, 0, 0, 0);
+
+    const raw = await Inspection.aggregate([
+      { $match: { createdAt: { $gte: since } } },
+      {
+        $group: {
+          _id: {
+            date: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+            status: {
+              $ifNull: [
+                '$complianceStatus',
+                { $cond: [{ $in: ['$status', ['compliant', 'non-compliant', 'needs-review']] }, '$status', 'non-compliant'] }
+              ]
+            },
+          },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { '_id.date': 1 } },
+    ]);
+
+    // Build a complete date map for the range (fill zeros for missing days)
+    const dateMap = {};
+    for (let i = 0; i < days; i++) {
+      const d = new Date(since);
+      d.setDate(since.getDate() + i);
+      const key = d.toISOString().slice(0, 10);
+      dateMap[key] = { date: key, compliant: 0, 'non-compliant': 0, 'needs-review': 0, total: 0 };
+    }
+
+    for (const entry of raw) {
+      const { date, status } = entry._id;
+      if (!dateMap[date]) continue;
+      const safeStatus = ['compliant', 'non-compliant', 'needs-review'].includes(status) ? status : 'non-compliant';
+      dateMap[date][safeStatus] += entry.count;
+      dateMap[date].total += entry.count;
+    }
+
+    res.json(Object.values(dateMap));
+  } catch (error) {
+    console.error('Trends error:', error.message);
+    res.status(500).json({ error: 'Could not load trend data' });
+  }
+});
+
+// ── GET /api/dashboard/scores — score bucket distribution ────────────────────
+router.get('/dashboard/scores', async (req, res) => {
+  try {
+    const buckets = [
+      { label: '0–20', min: 0, max: 20 },
+      { label: '21–40', min: 21, max: 40 },
+      { label: '41–60', min: 41, max: 60 },
+      { label: '61–80', min: 61, max: 80 },
+      { label: '81–100', min: 81, max: 100 },
+    ];
+
+    const counts = await Promise.all(
+      buckets.map((b) =>
+        Inspection.countDocuments({ complianceScore: { $gte: b.min, $lte: b.max } })
+          .then((count) => ({ label: b.label, count }))
+      )
+    );
+
+    res.json(counts);
+  } catch (error) {
+    res.status(500).json({ error: 'Could not load score distribution' });
+  }
+});
+
 module.exports = router;
 
