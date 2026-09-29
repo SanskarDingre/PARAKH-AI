@@ -1,13 +1,16 @@
 {
-  "name": "backend",
+  "name": "parakh-ai-backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Parakh AI — Legal Metrology Compliance Checker backend",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "seed:rules": "node scripts/seedRuleSet.js",
+    "seed:admin": "node scripts/seedAdmin.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Team MAANAK",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {

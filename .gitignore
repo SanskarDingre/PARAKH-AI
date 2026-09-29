@@ -1,0 +1,28 @@
+# === Node.js ===
+node_modules/
+*.log
+npm-debug.log*
+
+# === Environment ===
+.env
+.env.local
+.env.production
+
+# === Python ===
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+
+# === Build outputs ===
+dist/
+build/
+
+# === Uploads (local dev storage) ===
+backend/uploads/
+
+# === Editor ===
+.vscode/settings.json
+.idea/
+*.swp

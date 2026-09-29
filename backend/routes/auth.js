@@ -5,6 +5,8 @@ const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const User = require('../models/User');
 const Otp = require('../models/Otp');
+const { verifyToken } = require('../middleware/auth');
+
 
 const router = express.Router();
 
@@ -121,6 +123,17 @@ router.post('/otp/verify', async (req, res) => {
   } catch (error) {
     console.error('OTP verify error:', error.message);
     res.status(500).json({ error: 'Could not verify OTP.' });
+  }
+});
+
+// GET /api/auth/me — return own profile
+router.get('/me', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id, '-passwordHash');
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json({ name: user.name, email: user.email, phone: user.phone, role: user.role });
+  } catch {
+    res.status(500).json({ error: 'Could not fetch profile' });
   }
 });
 

@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema({
   passwordHash: { type: String, required: true },
   role: {
     type: String,
-    enum: ['admin', 'inspector', 'reviewer', 'viewer'],
+    enum: ['admin', 'officer', 'inspector', 'reviewer', 'viewer'],
     default: 'viewer',
   },
   createdAt: { type: Date, default: Date.now },

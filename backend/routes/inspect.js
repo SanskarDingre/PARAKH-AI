@@ -8,9 +8,20 @@ const Inspection = require('../models/Inspection');
 const RuleSet = require('../models/RuleSet');
 const Violation = require('../models/Violation');
 const AuditLog = require('../models/AuditLog');
+const { verifyToken } = require('../middleware/auth');
 
 const router = express.Router();
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 20 * 1024 * 1024 },
+  fileFilter(req, file, cb) {
+    if (/image\//.test(file.mimetype)) cb(null, true);
+    else cb(new Error('Only image files are accepted'));
+  },
+});
+
+// All legacy inspect routes require auth
+router.use(verifyToken);
 
 router.post('/inspect', upload.single('image'), async (req, res) => {
   try {
@@ -125,13 +136,20 @@ router.get('/inspect/:id/report', async (req, res) => {
 router.get('/dashboard', async (req, res) => {
   try {
     const total = await Inspection.countDocuments();
-    const compliant = await Inspection.countDocuments({ status: 'compliant' });
-    const nonCompliant = await Inspection.countDocuments({ status: 'non-compliant' });
-    const needsReview = await Inspection.countDocuments({ status: 'needs-review' });
+    // Support both old 'status' field and new 'complianceStatus' field
+    const compliant = await Inspection.countDocuments({ $or: [{ complianceStatus: 'compliant' }, { status: 'compliant' }] });
+    const nonCompliant = await Inspection.countDocuments({ $or: [{ complianceStatus: 'non-compliant' }, { status: 'non-compliant' }] });
+    const needsReview = await Inspection.countDocuments({ $or: [{ complianceStatus: 'needs-review' }, { status: 'needs-review' }] });
     const severityBreakdown = await Violation.aggregate([
       { $group: { _id: '$severity', count: { $sum: 1 } } },
     ]);
-    res.json({ total, compliant, nonCompliant, needsReview, severityBreakdown });
+    // Recent inspections for dashboard table
+    const recent = await Inspection.find()
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .select('_id productName complianceStatus complianceScore complianceScore createdAt inspectorName')
+      .lean();
+    res.json({ total, compliant, nonCompliant, needsReview, severityBreakdown, recent });
   } catch (error) {
     res.status(500).json({ error: 'Could not load dashboard data' });
   }

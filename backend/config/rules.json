@@ -1,71 +1,189 @@
 {
-  "ruleSetVersion": "LMPC-2011-v2",
+  "ruleSetVersion": "LMPC-2011-v3",
+  "sourceTitle": "Legal Metrology (Packaged Commodities) Rules, 2011",
+  "sourceUrl": "https://consumeraffairs.nic.in/acts-rules/legal-metrology-rules/legal-metrology-packaged-commodities-rules-2011",
+  "effectiveDate": "2011-09-01",
+  "lastUpdated": "2023-01-01",
   "rules": [
     {
       "key": "manufacturer",
       "id": "LM-PC-6-1-A",
       "title": "Manufacturer / Packer Details",
       "category": "Identity Declaration",
-      "requirement": "Name and address of the manufacturer, or the manufacturer and packer if different.",
+      "requirement": "Name and complete address of the manufacturer, or the manufacturer and packer if different persons.",
       "legalReference": "Legal Metrology (Packaged Commodities) Rules, 2011 — Rule 6(1)(a)",
       "severity": "high",
+      "applicability": "always",
       "applicabilityPatterns": [],
-      "patterns": ["manufactured by", "marketed by", "packed by", "mfg\\.?\\s?by"]
+      "patterns": ["manufactured by", "marketed by", "packed by", "mfg\\.?\\s?by", "mfd by", "manuf", "packaged by", "distributed by"]
     },
     {
       "key": "importerDetails",
       "id": "LM-PC-6-1-A2",
-      "title": "Importer Details (Imported Packages)",
+      "title": "Importer Details",
       "category": "Identity Declaration",
-      "requirement": "Name and address of the importer — required only when the package is imported.",
+      "requirement": "Name and complete address of the importer — required only for imported packages.",
       "legalReference": "Legal Metrology (Packaged Commodities) Rules, 2011 — Rule 6(1)(a)",
       "severity": "high",
+      "applicability": "conditional",
       "applicabilityPatterns": ["imported", "import", "country of origin"],
-      "patterns": ["imported by", "importer"]
+      "patterns": ["imported by", "importer", "sole importer", "authorised importer"]
+    },
+    {
+      "key": "genericName",
+      "id": "LM-PC-6-1-B",
+      "title": "Generic / Common Name of Commodity",
+      "category": "Product Declaration",
+      "requirement": "Generic or common name of the commodity contained in the package.",
+      "legalReference": "Legal Metrology (Packaged Commodities) Rules, 2011 — Rule 6(1)(b)",
+      "severity": "high",
+      "applicability": "always",
+      "applicabilityPatterns": [],
+      "patterns": ["biscuits", "cookies", "chips", "noodles", "rice", "wheat", "salt", "sugar", "oil", "dal", "flour", "maida", "atta", "soap", "shampoo", "cream", "lotion", "detergent", "tea", "coffee", "milk", "water", "juice", "candy", "chocolate", "namkeen", "papad", "mukhwas", "masala", "spices", "toothpaste", "paste"]
     },
     {
       "key": "netQuantity",
       "id": "LM-PC-6-1-C",
       "title": "Net Quantity",
       "category": "Quantity Declaration",
-      "requirement": "Net quantity of the commodity, in terms of standard unit of weight, measure, or number.",
+      "requirement": "Net quantity in standard unit of weight or measure or number.",
       "legalReference": "Legal Metrology (Packaged Commodities) Rules, 2011 — Rule 6(1)(c)",
       "severity": "high",
+      "applicability": "always",
       "applicabilityPatterns": [],
-      "patterns": ["net qty", "net quantity", "net wt", "net weight", "\\d+\\s?(g|kg|ml|l|gm|gms)\\b"]
+      "patterns": ["net qty", "net quantity", "net wt", "net weight", "net content", "net vol", "net volume", "\\d+\\s?(g|kg|ml|l|gm|gms|litre|liter|gram|grams|kilogram|kilograms|pieces|pcs|pc|nos|no\\.s|count|ct)\\b"]
     },
     {
       "key": "mfgDate",
       "id": "LM-PC-6-1-D",
-      "title": "Month and Year of Manufacture",
+      "title": "Month and Year of Manufacture / Packing",
       "category": "Date Declaration",
-      "requirement": "The month and year in which the commodity was manufactured, pre-packed, or imported.",
+      "requirement": "Month and year in which the commodity was manufactured, pre-packed, or imported.",
       "legalReference": "Legal Metrology (Packaged Commodities) Rules, 2011 — Rule 6(1)(d)",
       "severity": "medium",
+      "applicability": "always",
       "applicabilityPatterns": [],
-      "patterns": ["mfg date", "mfd", "manufactured on", "packed on", "packaging date", "\\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*[\\s./-]\\d{2,4}\\b"]
+      "patterns": ["mfg date", "mfd", "mfg\\.", "manufactured on", "packed on", "packaging date", "mfg:", "mfd:", "\\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*[\\s./-]\\d{2,4}\\b", "\\d{2}[/.-]\\d{2}[/.-]\\d{2,4}"]
     },
     {
       "key": "mrp",
       "id": "LM-PC-6-1-E",
       "title": "Maximum Retail Price (MRP)",
       "category": "Price Declaration",
-      "requirement": "Retail sale price of the package, inclusive of all taxes.",
+      "requirement": "Retail sale price inclusive of all taxes (MRP). Must display ₹ or Rs. symbol.",
       "legalReference": "Legal Metrology (Packaged Commodities) Rules, 2011 — Rule 6(1)(e)",
       "severity": "high",
+      "applicability": "always",
       "applicabilityPatterns": [],
-      "patterns": ["mrp", "m\\.r\\.p", "maximum retail price", "sales price", "rs\\.?\\s?\\d+", "\\u20b9\\s?\\d+"]
+      "patterns": ["mrp", "m\\.r\\.p", "maximum retail price", "sales price", "rs\\.?\\s?\\d+", "₹\\s?\\d+", "incl.*tax", "inclusive.*tax", "all taxes"]
     },
     {
       "key": "consumerCare",
       "id": "LM-PC-6-2",
       "title": "Consumer Care Details",
       "category": "Contact Declaration",
-      "requirement": "Name, address, telephone number, and e-mail address (if available) of the person or office to contact for consumer complaints.",
+      "requirement": "Name, address, telephone number, and e-mail of the person or office to contact for complaints.",
       "legalReference": "Legal Metrology (Packaged Commodities) Rules, 2011 — Rule 6(2)",
       "severity": "medium",
+      "applicability": "always",
       "applicabilityPatterns": [],
-      "patterns": ["consumer care", "customer care", "for complaints", "helpline", "@\\w+\\.\\w+"]
+      "patterns": ["consumer care", "customer care", "for complaints", "helpline", "@\\w+\\.\\w+", "1800", "toll.?free", "consumer helpline", "grievance"]
+    },
+    {
+      "key": "bestBefore",
+      "id": "LM-PC-6-1-F",
+      "title": "Best Before / Use By / Expiry Date",
+      "category": "Date Declaration",
+      "requirement": "Best before / use by date — mandatory for food and perishable commodities.",
+      "legalReference": "Legal Metrology (Packaged Commodities) Rules, 2011 — Rule 6(1)(f)",
+      "severity": "high",
+      "applicability": "conditional",
+      "applicabilityPatterns": ["food", "biscuit", "cookie", "chips", "noodle", "rice", "flour", "atta", "maida", "tea", "coffee", "milk", "juice", "water", "candy", "chocolate", "namkeen", "snack", "eat", "consume", "perishable"],
+      "patterns": ["best before", "use by", "expiry", "exp date", "exp\\.", "exp:", "best before end", "use before", "bb:", "bb date", "\\bexp\\b"]
+    },
+    {
+      "key": "countryOfOrigin",
+      "id": "LM-PC-6-1-G",
+      "title": "Country of Origin",
+      "category": "Import Declaration",
+      "requirement": "Country of origin — mandatory for imported commodities.",
+      "legalReference": "Legal Metrology (Packaged Commodities) Rules, 2011 — Rule 6(1)(g)",
+      "severity": "medium",
+      "applicability": "conditional",
+      "applicabilityPatterns": ["imported", "import", "imported by"],
+      "patterns": ["country of origin", "origin:", "made in", "product of", "manufactured in", "country of manufacture"]
+    },
+    {
+      "key": "unitSalePrice",
+      "id": "LM-PC-6-1-E2",
+      "title": "Unit Sale Price",
+      "category": "Price Declaration",
+      "requirement": "Price per unit (e.g., price per kg, per litre) when sold in different pack sizes.",
+      "legalReference": "Legal Metrology (Packaged Commodities) Rules, 2011 — Rule 6(1)(e) read with Rule 18",
+      "severity": "low",
+      "applicability": "always",
+      "applicabilityPatterns": [],
+      "patterns": ["per kg", "per litre", "per liter", "per gm", "per ml", "per piece", "per unit", "unit price", "price per"]
+    },
+    {
+      "key": "batchLotNumber",
+      "id": "LM-PC-7",
+      "title": "Batch / Lot Number",
+      "category": "Traceability Declaration",
+      "requirement": "Batch number or code number or lot number on the package for identification.",
+      "legalReference": "Legal Metrology (Packaged Commodities) Rules, 2011 — Rule 7",
+      "severity": "medium",
+      "applicability": "always",
+      "applicabilityPatterns": [],
+      "patterns": ["batch no", "batch number", "lot no", "lot number", "batch:", "lot:", "batch#", "b\\.no", "l\\.no", "code no", "code number"]
+    },
+    {
+      "key": "productName",
+      "id": "LM-PC-6-1-B2",
+      "title": "Product / Brand Name Visible",
+      "category": "Product Declaration",
+      "requirement": "Product name or brand name must be clearly legible on the principal display panel.",
+      "legalReference": "Legal Metrology (Packaged Commodities) Rules, 2011 — Rule 6(1)(b)",
+      "severity": "medium",
+      "applicability": "always",
+      "applicabilityPatterns": [],
+      "patterns": ["\\b[A-Z][A-Z]+\\b", "brand", "product"]
+    },
+    {
+      "key": "netWeightDisplay",
+      "id": "LM-PC-10",
+      "title": "Net Weight Declared in Standard Units",
+      "category": "Quantity Declaration",
+      "requirement": "Net weight/volume must be in metric units (grams, kilograms, millilitres, litres).",
+      "legalReference": "Legal Metrology (Packaged Commodities) Rules, 2011 — Rule 10",
+      "severity": "medium",
+      "applicability": "always",
+      "applicabilityPatterns": [],
+      "patterns": ["\\d+\\s?(g|gm|gms|kg|ml|l|litre|liter|gram|kilogram)\\b"]
+    },
+    {
+      "key": "fssaiLicense",
+      "id": "FSSAI-REG",
+      "title": "FSSAI License / Registration Number",
+      "category": "Regulatory Declaration",
+      "requirement": "FSSAI license or registration number for food articles.",
+      "legalReference": "Food Safety and Standards (Packaging and Labelling) Regulations, 2011 — Regulation 2.1.1 (applicable alongside LMPC)",
+      "severity": "medium",
+      "applicability": "conditional",
+      "applicabilityPatterns": ["food", "biscuit", "cookie", "chips", "noodle", "rice", "flour", "atta", "maida", "tea", "coffee", "milk", "juice", "water", "candy", "chocolate", "namkeen", "snack", "masala", "spice"],
+      "patterns": ["fssai", "lic. no", "license no", "licence no", "lic no", "fssai no", "fssai license", "\\b[0-9]{14}\\b"]
+    },
+    {
+      "key": "mrpInclusiveTax",
+      "id": "LM-PC-6-1-E3",
+      "title": "MRP Inclusive of All Taxes Statement",
+      "category": "Price Declaration",
+      "requirement": "The MRP label must indicate that the price is inclusive of all taxes.",
+      "legalReference": "Legal Metrology (Packaged Commodities) Rules, 2011 — Rule 6(1)(e) proviso",
+      "severity": "low",
+      "applicability": "always",
+      "applicabilityPatterns": [],
+      "patterns": ["incl.*tax", "inclusive.*all.*tax", "incl. all taxes", "all taxes inclusive", "inclusive of all taxes", "incl. taxes"]
     }
   ]
 }
