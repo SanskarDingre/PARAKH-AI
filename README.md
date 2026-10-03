@@ -1,158 +1,94 @@
 # Parakh AI — Legal Metrology Compliance Checker
 
-AI-powered system to verify compliance of packaged commodities under the
-**Legal Metrology (Packaged Commodities) Rules, 2011** by scanning product labels and photos.
+**SIH 2026 | Problem Statement 26034 | Team MAANAK**
 
-**Team:** MAANAK | **SIH Problem Statement:** 26034 | **Version:** 2.0.0
-
----
+An AI-powered system that scans packaged-product labels, extracts
+declarations using OCR, checks them against the Legal Metrology
+(Packaged Commodities) Rules, 2011, and produces an evidence-backed
+compliance verdict with a downloadable PDF report.
 
 ## Architecture
 
-Three services that must run simultaneously:
+Three independent services run together:
 
-| Service | Tech | Port |
-|---|---|---|
-| `ocr-service/` | Python/FastAPI/EasyOCR | 8000 |
-| `backend/` | Node.js/Express/MongoDB | 5000 |
-| `frontend/` | React 19/Vite/TailwindCSS 4 | 5173 |
+1. **ocr-service** (Python / FastAPI / EasyOCR) — reads text from a
+   package photo and returns detected lines with confidence scores and
+   bounding boxes.
+2. **backend** (Node.js / Express / MongoDB) — receives uploads, runs
+   the rule engine against the OCR text, stores results, generates PDF
+   reports, and handles authentication.
+3. **frontend** (React / Vite / Tailwind) — the web app used to upload
+   photos, view results, and browse inspection history.
 
----
-
-## Quick Start
-
-### 1. OCR Service (Python)
-
-```bash
-cd ocr-service
-python -m venv venv
-venv\Scripts\activate           # On Mac/Linux: source venv/bin/activate
-pip install fastapi uvicorn python-multipart easyocr opencv-python-headless
-uvicorn main:app --reload
-```
-
-Runs on `http://127.0.0.1:8000`
-
-### 2. Backend (Node.js)
-
-```bash
-cd backend
-npm install
-# Create your .env from the example:
-copy .env.example .env          # On Mac/Linux: cp .env.example .env
-# Edit .env with your MongoDB URI, JWT secret, etc.
-# Seed the database:
-npm run seed:admin
-npm run seed:rules
-# Start:
-npm run dev
-```
-
-Runs on `http://localhost:5000`
-
-### 3. Frontend (React)
-
-```bash
-cd frontend
-npm install
-# Create your .env.local:
-echo VITE_API_URL=http://localhost:5000 > .env.local
-npm run dev
-```
-
-Runs on `http://localhost:5173`
-
----
+See [`ARCHITECTURE.md`](./ARCHITECTURE.md) for a deeper breakdown and
+[`RULE_ENGINE.md`](./RULE_ENGINE.md) for how compliance is actually
+determined.
 
 ## Features
 
-### Phase 1 (Implemented ✅)
-- **Multi-image upload** — drag & drop with per-image label picker (front/back/side/MRP/ingredients)
-- **EasyOCR pipeline** — runs on every uploaded image, returns bounding boxes
-- **15-rule LMPC-2011 engine** — all rules cite actual rule numbers (Rule 6(1)(a), 6(1)(b), etc.)
-- **Declaration extraction** — structured extraction of 12 field types with type normalization
-  - MRP → `{amount: 99, currency: 'INR'}`
-  - Net Quantity → `{amount: 500, unit: 'g'}`
-  - Dates → `{display: 'Jan 2025', year: 2025, month: 1}`
-- **Evidence viewer** — canvas overlay with OCR bounding boxes highlighting detected text
-- **Compliance scoring** — weighted by severity (High×3, Medium×2, Low×1)
-- **Rule results**: PASS / FAIL / UNABLE_TO_VERIFY / NOT_APPLICABLE / REQUIRES_REVIEW
-- **Inspection lifecycle** tracking: CREATED → OCR_PROCESSING → EXTRACTING → VALIDATING → COMPLETED
-- **PDF report** with extracted fields, rule results, violations, officer decision
-- **Searchable history** with status filter and pagination
-- **Officer verification** — confirm or override AI result with audit trail
-- **Admin panel** — user management, role assignment
-- **RBAC** — viewer, inspector, officer, admin roles
-- **All routes protected** — JWT required on all inspect/history/violations/dashboard endpoints
+- Photo → OCR → rule-based compliance check, with real legal
+  citations (Legal Metrology (Packaged Commodities) Rules, 2011 — Rule
+  6) for every requirement checked
+- Five result states per rule: `PASS`, `FAIL`, `WARNING`,
+  `NOT_APPLICABLE`, `UNABLE_TO_VERIFY` — not just pass/fail
+- A confidence-weighted compliance score (0–100%), not a hardcoded number
+- Evidence shown per field: the exact matched text and OCR confidence
+- Manual officer review: confirm or override any automated result
+- Downloadable PDF compliance report, including the required
+  "AI-assisted preliminary assessment" disclaimer
+- Inspection history and a violations log, backed by MongoDB
+- JWT-based authentication with role support (admin / inspector /
+  officer / reviewer / viewer)
+- A versioned rule set stored in the database (`RuleSet` collection),
+  so Legal Metrology amendments can be added without changing code
 
-### Legal Rules Implemented
-| Rule ID | Rule | Severity |
-|---|---|---|
-| LM-PC-6-1-A | Manufacturer / Packer Details | High |
-| LM-PC-6-1-A2 | Importer Details | High |
-| LM-PC-6-1-B | Generic / Common Name | High |
-| LM-PC-6-1-C | Net Quantity | High |
-| LM-PC-6-1-D | Month and Year of Manufacture | Medium |
-| LM-PC-6-1-E | Maximum Retail Price (MRP) | High |
-| LM-PC-6-2 | Consumer Care Details | Medium |
-| LM-PC-6-1-F | Best Before / Expiry Date | High |
-| LM-PC-6-1-G | Country of Origin | Medium |
-| LM-PC-6-1-E2 | Unit Sale Price | Low |
-| LM-PC-7 | Batch / Lot Number | Medium |
-| LM-PC-6-1-B2 | Product / Brand Name | Medium |
-| LM-PC-10 | Net Weight in Standard Units | Medium |
-| FSSAI-REG | FSSAI License Number | Medium |
-| LM-PC-6-1-E3 | MRP Inclusive of All Taxes | Low |
+## Setup Instructions
 
----
+### 1. OCR Service
+```bash
+cd ocr-service
+python -m venv venv
+venv\Scripts\activate        # On Mac/Linux: source venv/bin/activate
+pip install fastapi uvicorn python-multipart easyocr opencv-python-headless
+uvicorn main:app
+```
+Runs on http://127.0.0.1:8000
 
-## API Reference
+### 2. Backend
+```bash
+cd backend
+npm install
+```
+Copy `.env.example` to `.env` and fill in real values (see that file
+for what each variable means), then seed the database:
+```bash
+node scripts/seedAdmin.js
+node scripts/seedRuleSet.js
+node server.js
+```
+Runs on http://localhost:5000
 
-### Auth
-| Method | Path | Description |
-|---|---|---|
-| POST | /api/auth/register | Register new user |
-| POST | /api/auth/login | Login with password |
-| POST | /api/auth/otp/request | Request OTP |
-| POST | /api/auth/otp/verify | Verify OTP |
-| GET | /api/auth/me | Get current user |
+### 3. Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+Runs on http://localhost:5173
 
-### Inspections (New Multi-Image API)
-| Method | Path | Description |
-|---|---|---|
-| POST | /api/inspections | Create empty inspection |
-| GET | /api/inspections | List with search/filter |
-| GET | /api/inspections/:id | Full inspection detail |
-| POST | /api/inspections/:id/images | Upload images (multipart) |
-| POST | /api/inspections/:id/analyze | Run OCR + extraction + rules |
-| GET | /api/inspections/:id/results | Get rule results |
-| GET | /api/inspections/:id/violations | Get violations |
-| GET | /api/inspections/:id/images/:imgId | Get image with OCR lines |
-| PATCH | /api/inspections/:id/verify | Officer verify/override |
-| GET | /api/inspections/:id/report | Download PDF report |
+## Current Status
 
-### Legacy (Backward Compatible)
-| Method | Path | Description |
-|---|---|---|
-| POST | /api/inspect | Single-image inspect |
-| GET | /api/history | Legacy history |
-| GET | /api/dashboard | Dashboard stats |
-| GET | /api/violations | All violations |
-
----
-
-## Environment Variables
-
-See `backend/.env.example` for the full list. Key variables:
-- `MONGO_URI` — MongoDB Atlas connection string
-- `JWT_SECRET` — Long random secret for JWT signing
-- `OCR_SERVICE_URL` — URL of the FastAPI OCR service
-- `EMAIL_USER`, `EMAIL_PASS` — Gmail SMTP for OTP (optional)
-
----
+The core pipeline (photo → OCR → rule engine → evidence → PDF report
+→ history) is complete and tested against real product labels. A
+newer multi-image inspection flow (`/api/inspections`) exists in the
+codebase but its dashboard and creation UI are still being refined —
+currently not linked from the main navigation while that work
+continues, in favor of keeping the simpler, fully-working single-image
+flow (`/check`) as the primary path.
 
 ## Disclaimer
 
-This system provides AI-assisted preliminary compliance assessments. Final legal determination
-remains subject to authorized inspection and applicable law. Results do not constitute an official
-government certificate or clearance.
+This tool produces an **AI-assisted preliminary compliance
+assessment**. It is not an official government certificate; final
+legal determination remains subject to authorized inspection and
+applicable law.

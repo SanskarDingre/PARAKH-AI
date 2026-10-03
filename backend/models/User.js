@@ -6,10 +6,10 @@ const userSchema = new mongoose.Schema({
   phone: { type: String, unique: true, sparse: true, trim: true },
   passwordHash: { type: String, required: true },
   role: {
-    type: String,
-    enum: ['admin', 'officer', 'inspector', 'reviewer', 'viewer'],
-    default: 'viewer',
-  },
+  type: String,
+  enum: ['admin', 'inspector', 'officer', 'reviewer', 'viewer'],
+  default: 'viewer',
+},
   createdAt: { type: Date, default: Date.now },
 });
 
