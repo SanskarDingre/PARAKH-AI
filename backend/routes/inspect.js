@@ -94,15 +94,7 @@ router.get('/history', async (req, res) => {
   }
 });
 
-router.delete('/history', async (req, res) => {
-  try {
-    await Inspection.deleteMany({});
-    await Violation.deleteMany({});
-    res.json({ message: 'History cleared' });
-  } catch (error) {
-    res.status(500).json({ error: 'Could not clear history' });
-  }
-});
+
 
 router.patch('/inspect/:id/verify', async (req, res) => {
   try {

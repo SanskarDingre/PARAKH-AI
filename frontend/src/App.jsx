@@ -4,7 +4,6 @@ import ProtectedRoute from './components/ProtectedRoute';
 import HomePage from './pages/HomePage';
 import AboutPage from './pages/AboutPage';
 import CheckPage from './pages/CheckPage';
-import HistoryPage from './pages/HistoryPage';
 import ViolationsPage from './pages/ViolationsPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -22,7 +21,6 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/check" element={<CheckPage />} />
-          <Route path="/history" element={<ProtectedRoute><HistoryPage /></ProtectedRoute>} />
           <Route path="/violations" element={<ProtectedRoute><ViolationsPage /></ProtectedRoute>} />
         </Route>
       </Routes>
