@@ -53,8 +53,4 @@ mongoose
   .then(() => console.log('✅ Connected to MongoDB'))
   .catch((err) => console.error('❌ MongoDB connection failed:', err.message));
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Parakh AI backend running on http://localhost:${PORT}`);
-  console.log(`   OCR service expected at: ${process.env.OCR_SERVICE_URL}`);
-});
+module.exports = app;
